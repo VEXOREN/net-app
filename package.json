@@ -1,0 +1,23 @@
+{
+  "name": "podsieci-trener",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Trener podsieci IPv4: metoda magicznej liczby, VLSM, quiz L2/L3. PWA offline.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.3",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@fontsource/chakra-petch": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0"
+  }
+}
