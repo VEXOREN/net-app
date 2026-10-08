@@ -120,17 +120,6 @@
       <p>A: 0–127 (0…), B: 128–191 (10…), C: 192–223 (110…), D: 224–239 multicast (1110…), E: 240–255 zarezerwowana.</p>
     </div>
 
-    <div class="card frame">
-      <h2>Na co uważać w skrypcie</h2>
-      <ul class="tight">
-        <li>Klasa D to multicast, a nie „zarezerwowana na przyszłość”. Zarezerwowana jest klasa E.</li>
-        <li>Kolejność „od największej do najmniejszej” w VLSM to najprostsza metoda bez dziur, a nie jedyna poprawna.</li>
-        <li>„Adres prywatny jest routowalny”: tak, wewnątrz Twojej sieci. W Internecie jest odfiltrowany, stąd NAT.</li>
-        <li>Zapis IPv6 „w notacji dziesiętnej z kropkami” to ciekawostka dydaktyczna. W praktyce tylko hex z dwukropkami, a podany adres można skrócić tylko, jeśli ma zerowe grupy.</li>
-        <li>W zadaniu z rysunkiem 2 treść podaje 192.<b>169</b>.202.0, a rysunek 192.<b>168</b>. 192.169 to adres publiczny, więc chodzi o literówkę.</li>
-        <li>Bibliografia [5] mówi o RFC 2372, a link prowadzi do RFC 2373. Poprawny jest 2373 (dziś zastąpiony przez RFC 4291).</li>
-      </ul>
-    </div>
   </section>
 
   <section class="tab" id="t-trening">
