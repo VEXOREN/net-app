@@ -25,6 +25,21 @@ export function drawXp() {
   $("#xpTxt").textContent = `${xp} XP`;
 }
 
+type Listener = () => void;
+const listeners: Listener[] = [];
+export const onProgress = (cb: Listener) => { listeners.push(cb); };
+const emit = () => listeners.forEach((cb) => cb());
+
+export const getXp = () => xp;
+
+export function setXp(n: number, announce = false) {
+  const diff = n - xp;
+  xp = n;
+  save(KEY + "xp", xp);
+  drawXp();
+  if (announce && diff > 0) toast(`+${diff} XP`);
+}
+
 export function gain(n: number) {
   if (n <= 0) return;
   const before = levelOf(xp);
@@ -33,6 +48,7 @@ export function gain(n: number) {
   drawXp();
   const after = levelOf(xp);
   toast(after > before ? `Awans: Lv ${after} ${rankOf(after)}` : `+${n} XP`);
+  emit();
 }
 
 interface Track { n: number; ok: number; streak: number; best: number; time: number }
@@ -47,7 +63,14 @@ export function bump(key: "tr" | "fl", ok: boolean, ms: number) {
   else s.streak = 0;
   saveStats();
 }
-export const saveStats = () => save(KEY + "stats", stats);
+export const saveStats = () => { save(KEY + "stats", stats); emit(); };
+
+export const totalAttempts = (s: Partial<Stats>) => (s.tr?.n ?? 0) + (s.fl?.n ?? 0);
+
+export function replaceStats(next: Partial<Stats>) {
+  Object.assign(stats, { tr: empty(), fl: empty(), sprint: 0 }, next);
+  save(KEY + "stats", stats);
+}
 
 export function statsHtml(key: "tr" | "fl") {
   const s = stats[key];

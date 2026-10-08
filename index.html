@@ -22,7 +22,10 @@
       <div class="xpbar"><i id="xpFill" style="width:0"></i></div>
       <span id="xpTxt">0 XP</span>
     </div>
-    <button class="theme" id="themeBtn" type="button">Motyw</button>
+    <div class="top-btns">
+      <button class="theme acct-btn" id="authBtn" type="button" hidden>Zaloguj</button>
+      <button class="theme" id="themeBtn" type="button">Motyw</button>
+    </div>
   </div>
   <h1>Podsieci bez rozpisywania bitów</h1>
   <p class="lede">Obejrzyj pokaz metody, potem licz sam w kalkulatorze i w treningu.</p>
@@ -64,6 +67,7 @@
     <button role="tab" data-t="vlsm" aria-selected="false">VLSM</button>
     <button role="tab" data-t="zadanie" aria-selected="false">Zadania z labów</button>
     <button role="tab" data-t="quiz" aria-selected="false">Quiz L2/L3</button>
+    <button role="tab" data-t="duel" aria-selected="false">Pojedynek</button>
   </nav>
 
   <section class="tab on" id="t-metoda">
@@ -268,12 +272,23 @@
       <div class="row" style="margin-top:12px"><button class="btn ghost" id="qzNext">Następne pytanie</button></div>
     </div>
   </section>
+  <section class="tab" id="t-duel">
+    <div class="card frame" id="duelCard">
+      <h2>Pojedynek 1 na 1</h2>
+      <div id="duelRoot"></div>
+    </div>
+  </section>
+
   <footer>
     <span><i class="dot" id="offDot"></i><span id="offTxt">…</span></span>
     <span>Na iPadzie: Safari → Udostępnij → Do ekranu początkowego</span>
     <button type="button" id="resetBtn">Wyzeruj postęp</button>
   </footer>
 </div>
+<dialog id="authDlg" class="frame">
+  <button type="button" class="dlg-x" id="authClose" aria-label="Zamknij">×</button>
+  <div id="authBody"></div>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script type="module" src="/src/main.ts"></script>
 </body>

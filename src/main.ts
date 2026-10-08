@@ -16,6 +16,9 @@ import { initFlash } from "./ui/flash";
 import { initVlsm } from "./ui/vlsm";
 import { initQuiz } from "./ui/quiz";
 import { initWalkthrough } from "./ui/walkthrough";
+import { initSync } from "./lib/sync";
+import { initAccount } from "./ui/account";
+import { initDuel } from "./ui/duel";
 
 const root = document.documentElement;
 try { const t = localStorage.getItem(KEY + "theme"); if (t) root.dataset.theme = JSON.parse(t); } catch {}
@@ -51,9 +54,12 @@ initTrening();
 initFlash();
 initVlsm();
 initQuiz();
+initSync();
+initAccount();
+initDuel();
 
 $("#resetBtn").addEventListener("click", () => {
-  if (!confirm("Wyzerować XP, statystyki i rekordy?")) return;
+  if (!confirm("Wyzerować lokalne XP, statystyki i rekordy? Postęp zapisany na koncie zostanie.")) return;
   clearAll(KEY);
   location.reload();
 });
