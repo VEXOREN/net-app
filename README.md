@@ -1,4 +1,4 @@
-# Podsieci — trener IPv4
+# Podsieci - trener IPv4
 
 PWA do nauki dzielenia na podsieci bez rozpisywania bitów (metoda magicznej liczby), VLSM i zagadnień L2/L3 z labów *Bezpieczeństwo Lokalnych Sieci Komputerowych* (AGH).
 
@@ -24,19 +24,6 @@ npm run build     # produkcyjny build do dist/
 npm run preview   # podgląd buildu, z działającym service workerem
 ```
 
-## Backend (Supabase)
-
-Bez backendu aplikacja działa normalnie, tylko bez kont i pojedynków. Żeby go włączyć:
-
-1. Załóż projekt na [supabase.com](https://supabase.com) (darmowy plan wystarczy).
-2. Wgraj schemat: wklej `supabase/migrations/20261008120000_init.sql` do **SQL Editor** i uruchom albo użyj CLI: `supabase link` i `supabase db push`.
-3. **Authentication → Providers**: włącz GitHub i Google.
-   - GitHub: **Settings → Developer settings → OAuth Apps → New**, callback `https://<projekt>.supabase.co/auth/v1/callback`.
-   - Google: Google Cloud Console → **APIs & Services → Credentials → OAuth client ID** (Web application), ten sam callback.
-4. **Authentication → URL Configuration**: Site URL to adres aplikacji na Pages, a w Redirect URLs dodaj też `http://localhost:5173/**`.
-5. Lokalnie skopiuj `.env.example` do `.env` i wpisz URL projektu oraz publishable (anon) key z **Project Settings → API**.
-6. Na GitHubie: **Settings → Secrets and variables → Actions → Variables**, dodaj `SUPABASE_URL` i `SUPABASE_ANON_KEY`. To klucz publiczny, bezpieczeństwo zapewniają polityki RLS.
-
 ### Model bezpieczeństwa
 
 - Wszystkie tabele mają włączone RLS, a klient ma wyłącznie prawo odczytu. Każda zmiana idzie przez funkcje RPC (`security definer`) z własną walidacją.
@@ -46,17 +33,7 @@ Bez backendu aplikacja działa normalnie, tylko bez kont i pojedynków. Żeby go
 - Nazwy z profili OAuth są escapowane przed wstawieniem do HTML.
 - `supabase/tests/db.test.ts` sprawdza te reguły na prawdziwym Postgresie (PGlite) w CI.
 
-## Publikacja na GitHub Pages
-
-1. Utwórz repo na GitHubie i wypchnij kod na gałąź `main`.
-2. W repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-3. Każdy push na `main` uruchamia `.github/workflows/deploy.yml`: testy, build i deploy.
-4. Aplikacja będzie pod `https://<login>.github.io/<nazwa-repo>/`.
-
-Workflow sam ustawia `BASE_PATH` na nazwę repo. Jeśli repo nazywa się `<login>.github.io`, zmień w workflow `BASE_PATH` na `/`.
-
-## Instalacja na iPadzie
-
+## Instalacja na mobilkach
 Otwórz stronę w Safari → Udostępnij → **Do ekranu początkowego**. Po pierwszym wczytaniu (w stopce pojawi się „Gotowe offline”) działa bez internetu. Nowe wersje pobierają się same przy kolejnym uruchomieniu z siecią.
 
 ## Stack
