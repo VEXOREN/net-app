@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Trener podsieci IPv4: metoda magicznej liczby, VLSM, quiz L2/L3. Działa offline.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Podsieci">
+<link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<title>Podsieci bez rozpisywania bitów</title>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="prompt">wojtek@agh:~$ ./trener_podsieci --lsk<span class="cur"></span></div>
+    <div class="xp" title="Punkty za poprawne odpowiedzi">
+      <span class="rank" id="rank">Lv 1</span>
+      <div class="xpbar"><i id="xpFill" style="width:0"></i></div>
+      <span id="xpTxt">0 XP</span>
+    </div>
+    <button class="theme" id="themeBtn" type="button">Motyw</button>
+  </div>
+  <h1>Podsieci bez rozpisywania bitów</h1>
+  <p class="lede">Obejrzyj pokaz metody, potem licz sam w kalkulatorze i w treningu.</p>
+
+  <section class="wt frame" id="wt" tabindex="-1"></section>
+
+  <h2 class="calc-head">Kalkulator</h2>
+  <p class="lede">Wpisz adres i przesuń prefiks. Bursztynowa ramka to ciekawy oktet: tylko w nim liczysz, reszta to kopiowanie, 0 albo 255.</p>
+
+  <div class="hero frame">
+    <div class="inputs">
+      <div class="field" style="flex:1;min-width:190px">
+        <label for="ipIn">Adres IP</label>
+        <input type="text" id="ipIn" value="192.168.202.183" inputmode="decimal" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field prefix-row">
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px">
+          <label for="pfxIn">Prefiks</label>
+          <input type="range" id="pfxIn" min="1" max="32" value="28">
+        </div>
+        <span class="pfx" id="pfxOut">/28</span>
+      </div>
+    </div>
+    <div class="ruler-scroll"><div class="ruler" id="ruler"></div></div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--net);box-shadow:0 0 6px var(--net)"></i>bity sieci</span>
+      <span><i class="sw" style="background:var(--host);box-shadow:0 0 6px var(--host)"></i>bity hosta</span>
+      <span><i class="sw" style="border:1px solid var(--amber)"></i>ciekawy oktet</span>
+    </div>
+    <div class="bmap" id="bmap"></div>
+    <div class="results" id="results"></div>
+    <div class="steps" id="steps"></div>
+  </div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-t="metoda" aria-selected="true">Metoda</button>
+    <button role="tab" data-t="trening" aria-selected="false">Trening</button>
+    <button role="tab" data-t="flash" aria-selected="false">Szybkie pytania</button>
+    <button role="tab" data-t="vlsm" aria-selected="false">VLSM</button>
+    <button role="tab" data-t="zadanie" aria-selected="false">Zadania z labów</button>
+    <button role="tab" data-t="quiz" aria-selected="false">Quiz L2/L3</button>
+  </nav>
+
+  <section class="tab on" id="t-metoda">
+    <div class="card frame">
+      <h2>Metoda magicznej liczby</h2>
+      <p>Zamiast zamieniać cały adres na binarny, liczysz w jednym oktecie, tym, w którym kończy się prefiks.</p>
+      <ol>
+        <li><b>Znajdź ciekawy oktet.</b> /1–8 → 1., /9–16 → 2., /17–24 → 3., /25–32 → 4. (gdy prefiks to wielokrotność 8, nic nie liczysz: kopiujesz oktety sieci i dopisujesz 0 lub 255).</li>
+        <li><b>Blok (magiczna liczba)</b> = 256 − wartość maski w tym oktecie. Albo szybciej: 2<sup>(bity hosta w tym oktecie)</sup>. Dla /27: 27 = 24 + 3, zostaje 5 bitów, blok = 32.</li>
+        <li><b>Adres sieci</b>: największa wielokrotność bloku ≤ wartości oktetu. 183 przy bloku 16 → 176. Oktety po prawej → 0.</li>
+        <li><b>Broadcast</b>: następna wielokrotność − 1. 176 + 16 − 1 = 191. Oktety po prawej → 255.</li>
+        <li><b>Hosty</b>: sieć + 1 do broadcast − 1. Liczba: 2<sup>32−n</sup> − 2.</li>
+      </ol>
+      <p>Bez dzielenia: wypisz w głowie wielokrotności bloku (0, 16, 32, 48 …) aż przeskoczysz wartość oktetu. Ostatnia przed przeskokiem to sieć.</p>
+    </div>
+
+    <div class="card frame">
+      <h2>Co trzeba mieć w głowie</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>bity w oktecie</th><th>maska</th><th>blok</th><th>prefiksy</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>128</td><td>128</td><td>/1 /9 /17 /25</td></tr>
+          <tr><td>2</td><td>192</td><td>64</td><td>/2 /10 /18 /26</td></tr>
+          <tr><td>3</td><td>224</td><td>32</td><td>/3 /11 /19 /27</td></tr>
+          <tr><td>4</td><td>240</td><td>16</td><td>/4 /12 /20 /28</td></tr>
+          <tr><td>5</td><td>248</td><td>8</td><td>/5 /13 /21 /29</td></tr>
+          <tr><td>6</td><td>252</td><td>4</td><td>/6 /14 /22 /30</td></tr>
+          <tr><td>7</td><td>254</td><td>2</td><td>/7 /15 /23 /31</td></tr>
+          <tr><td>8</td><td>255</td><td>1</td><td>/8 /16 /24 /32</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note" style="margin-top:8px">Maski to sumy narastające: 128, +64 = 192, +32 = 224, +16 = 240, +8 = 248, +4 = 252, +2 = 254, +1 = 255. Blok i maska w oktecie zawsze sumują się do 256.</p>
+    </div>
+
+    <div class="card frame">
+      <h2>Skróty na kolokwium</h2>
+      <h3>Ile hostów potrzebuję → jaki prefiks</h3>
+      <p>Weź hosty + 2, znajdź najbliższą potęgę dwójki w górę, prefiks = 32 − wykładnik. 30 PC + router = 31, +2 = 33 → 64 = 2<sup>6</sup> → /26. Pułapka: /27 ma tylko 30 hostów.</p>
+      <h3>Hosty w /n</h3>
+      <p>2<sup>32−n</sup> − 2. Dla /20: 2<sup>12</sup> − 2 = 4094. Znajomość potęg do 2<sup>16</sup> = 65536 wystarcza.</p>
+      <h3>Czy dwa adresy są w tej samej podsieci</h3>
+      <p>Porównaj oktety przed ciekawym (muszą być równe), a w ciekawym sprawdź, czy wypadają w tym samym bloku. 10.1.<b>37</b>.5 i 10.1.<b>44</b>.9 przy /21 (blok 8): 37 → 32, 44 → 40. Różne podsieci.</p>
+      <h3>Ile podsieci po podziale</h3>
+      <p>2<sup>pożyczone bity</sup>. /24 na /27: pożyczasz 3, wychodzi 8 podsieci po 32 adresy.</p>
+      <h3>Wildcard (ACL, OSPF)</h3>
+      <p>255 − maska w każdym oktecie, czyli blok − 1 w ciekawym oktecie. /27 → 0.0.0.31.</p>
+      <h3>VLSM</h3>
+      <p>Sortuj od największej potrzeby, każda podsieć zaczyna się na wielokrotności własnego bloku. Po kolei: sieć = poprzedni broadcast + 1. Przy malejących rozmiarach wyrównanie wychodzi samo.</p>
+      <h3>Klasa po pierwszym oktecie</h3>
+      <p>A: 0–127 (0…), B: 128–191 (10…), C: 192–223 (110…), D: 224–239 multicast (1110…), E: 240–255 zarezerwowana.</p>
+    </div>
+
+    <div class="card frame">
+      <h2>Na co uważać w skrypcie</h2>
+      <ul class="tight">
+        <li>Klasa D to multicast, a nie „zarezerwowana na przyszłość”. Zarezerwowana jest klasa E.</li>
+        <li>Kolejność „od największej do najmniejszej” w VLSM to najprostsza metoda bez dziur, a nie jedyna poprawna.</li>
+        <li>„Adres prywatny jest routowalny”: tak, wewnątrz Twojej sieci. W Internecie jest odfiltrowany, stąd NAT.</li>
+        <li>Zapis IPv6 „w notacji dziesiętnej z kropkami” to ciekawostka dydaktyczna. W praktyce tylko hex z dwukropkami, a podany adres można skrócić tylko, jeśli ma zerowe grupy.</li>
+        <li>W zadaniu z rysunkiem 2 treść podaje 192.<b>169</b>.202.0, a rysunek 192.<b>168</b>. 192.169 to adres publiczny, więc chodzi o literówkę.</li>
+        <li>Bibliografia [5] mówi o RFC 2372, a link prowadzi do RFC 2373. Poprawny jest 2373 (dziś zastąpiony przez RFC 4291).</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="tab" id="t-trening">
+    <div class="card frame" id="trCard">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Policz podsieć</h2>
+        <div class="seg" id="lvl">
+          <button aria-pressed="true" data-l="1">/24–/30</button>
+          <button aria-pressed="false" data-l="2">/16–/30</button>
+          <button aria-pressed="false" data-l="3">/8–/30</button>
+        </div>
+      </div>
+      <div class="row" style="justify-content:space-between;align-items:baseline">
+        <div class="task" id="trTask"></div>
+        <span class="timer" id="trTime">0.0 s</span>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="trNet">Adres sieci</label><input type="text" id="trNet" inputmode="decimal" autocomplete="off"></div>
+        <div class="field"><label for="trBc">Broadcast</label><input type="text" id="trBc" inputmode="decimal" autocomplete="off"></div>
+        <div class="field"><label for="trFirst">Pierwszy host</label><input type="text" id="trFirst" inputmode="decimal" autocomplete="off"></div>
+        <div class="field"><label for="trLast">Ostatni host</label><input type="text" id="trLast" inputmode="decimal" autocomplete="off"></div>
+        <div class="field"><label for="trHosts">Liczba hostów</label><input type="number" id="trHosts" inputmode="numeric"></div>
+      </div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn" id="trCheck">Sprawdź</button>
+        <button class="btn ghost" id="trHint">Podpowiedź</button>
+        <button class="btn ghost" id="trNext">Następne</button>
+      </div>
+      <div class="fb" id="trFb"></div>
+      <div class="stats" id="trStats"></div>
+    </div>
+    <p class="note">Enter sprawdza, drugi Enter losuje kolejne. Pod 20 s bez podpowiedzi = bonus XP.</p>
+  </section>
+
+  <section class="tab" id="t-flash">
+    <div class="card frame" id="flCard">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Szybkie pytania</h2>
+        <button class="btn pink" id="spBtn">Sprint 60 s</button>
+      </div>
+      <div class="sprint" id="spBar" hidden>
+        <span class="note">Czas</span><span class="big" id="spTime">60</span>
+        <span class="note">Trafione</span><span class="big" id="spScore">0</span>
+      </div>
+      <p class="note" style="margin-top:8px">Maska ↔ prefiks, hosty, prefiks dla N hostów, blok, wildcard, ta sama podsieć. Cel: poniżej 5 s na pytanie.</p>
+      <div class="task" id="flQ" style="font-size:clamp(18px,4vw,24px)"></div>
+      <div class="row">
+        <input type="text" id="flA" autocomplete="off" spellcheck="false" style="flex:1;min-width:160px;width:auto" aria-label="Odpowiedź">
+        <button class="btn" id="flCheck">Sprawdź</button>
+      </div>
+      <div class="fb" id="flFb"></div>
+      <div class="stats" id="flStats"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-vlsm">
+    <div class="card frame">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Rozplanuj adresację VLSM</h2>
+        <div class="seg" id="vlLvl">
+          <button aria-pressed="true" data-l="1">z /24</button>
+          <button aria-pressed="false" data-l="2">z /22</button>
+        </div>
+      </div>
+      <p style="margin-top:10px">Pula: <b class="mono" id="vlBase" style="color:var(--net)"></b>. Wpisz dla każdej sieci adres z prefiksem, np. <code>192.168.10.64/27</code>. Każdy poprawny, nienakładający się i oszczędny układ jest zaliczony.</p>
+      <div id="vlRows"></div>
+      <div class="bmap" id="vlMap"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="vlCheck">Sprawdź</button>
+        <button class="btn ghost" id="vlShow">Pokaż rozwiązanie</button>
+        <button class="btn ghost" id="vlNew">Nowe zadanie</button>
+      </div>
+      <div class="fb" id="vlFb"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="t-zadanie">
+    <div class="card frame">
+      <h2>Rysunek 2: dlaczego host A nie gada z B</h2>
+      <p>Spróbuj sam w kalkulatorze u góry, potem odkrywaj po kolei.</p>
+      <details><summary>1. Łącze Router A ↔ Router B</summary>
+        <p>.161/27 i .172/27: blok 32, 161 i 172 → 160. Oba w 192.168.202.160/27 (.160–.191). Działa, ale marnuje 28 adresów; tu wystarczy /30.</p>
+      </details>
+      <details><summary>2. LAN routera A: 192.168.202.183/28</summary>
+        <p>Blok 16, 183 → 176. Sieć 192.168.202.176/28 (.176–.191) leży w środku 192.168.202.160/27 łącza. Dwie sieci na jednym routerze się nakładają, IOS odrzuci adres z komunikatem <code>% … overlaps with FastEthernet…</code>.</p>
+      </details>
+      <details><summary>3. Host A: 192.168.201.196 / 255.255.255.248</summary>
+        <p>Trzeci oktet to <b>201</b>, nie 202, więc host jest w zupełnie innej sieci niż interfejs routera i nie ma bramy domyślnej. Nawet z poprawną maską nie dojdzie do routera.</p>
+      </details>
+      <details><summary>4. LAN B: 30 PC</summary>
+        <p>30 PC + interfejs Router B = 31 adresów. /27 daje 30 hostów, czyli o jeden za mało. Potrzebne /26 (62 hosty).</p>
+      </details>
+      <details><summary>5. Poprawiony plan (VLSM od największej)</summary>
+        <div class="tbl"><table>
+          <thead><tr><th>Sieć</th><th>Adres</th><th>Adresy</th></tr></thead>
+          <tbody>
+            <tr><td>LAN B (31)</td><td>192.168.202.0/26</td><td>R-B .1, PC .2–.31, bc .63</td></tr>
+            <tr><td>LAN A (2)</td><td>192.168.202.64/29</td><td>R-A .65, host A .66 /29, bc .71</td></tr>
+            <tr><td>Łącze R-A↔R-B</td><td>192.168.202.72/30</td><td>.73 i .74 (albo zostaw .160/27)</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:10px">Host A: 192.168.202.66, maska 255.255.255.248, brama 192.168.202.65. PC w LAN B: brama 192.168.202.1.</p>
+      </details>
+      <details><summary>6. Routing, czyli o czym wszyscy zapominają</summary>
+        <p>Każdy router zna tylko sieci podłączone bezpośrednio. Bez tras statycznych (albo RIP/OSPF) ping nie wróci. Przy łączu .72/30:</p>
+        <p><code>RA(config)# ip route 192.168.202.0 255.255.255.192 192.168.202.74</code></p>
+        <p><code>RB(config)# ip route 192.168.202.64 255.255.255.248 192.168.202.73</code></p>
+        <p>Plus <code>no shutdown</code> na każdym interfejsie routera.</p>
+      </details>
+    </div>
+
+    <div class="card frame">
+      <h2>Lab 2: 192.168.107.0/25 na dwie sieci</h2>
+      <details><summary>Podział</summary>
+        <p>/25 → dwie /26, blok 64.</p>
+        <p>Fa0/0: 192.168.107.0/26, brama .1 (albo .62), hosty .2–.62, bc .63.</p>
+        <p>Fa0/1: 192.168.107.64/26, brama .65 (albo .126), hosty .66–.126, bc .127.</p>
+        <p>Maska w obu: 255.255.255.192.</p>
+      </details>
+      <details><summary>Co zobaczysz w Wiresharku przy pingu PC11 → PC21</summary>
+        <p>PC11 widzi, że PC21 jest w innej sieci, więc wysyła ARP o MAC <b>bramy</b> (Fa0/0), nie PC21. Na odcinku SW1: MAC src = PC11, MAC dst = Fa0/0. Na odcinku SW2: MAC src = Fa0/1, MAC dst = PC21.</p>
+        <p>IP src/dst (PC11 → PC21) zostają bez zmian przez cały czas, MAC zmienia się na każdym skoku. TTL spada o 1 na routerze.</p>
+      </details>
+      <details><summary>Lab 1 (APIPA): czego się spodziewać</summary>
+        <p>Bez serwera DHCP Windows nada sobie 169.254.x.y/16 (link-local, RFC 3927). Klasa B według pierwszego oktetu. Przed użyciem adresu host wyśle ARP probe/gratuitous ARP, żeby wykryć konflikt.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="tab" id="t-quiz">
+    <div class="card frame">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Quiz z labów</h2>
+        <span class="note mono" id="qzProg"></span>
+      </div>
+      <p style="margin-top:12px;font-weight:600;font-size:17px" id="qzQ"></p>
+      <div id="qzOpts"></div>
+      <div class="fb" id="qzFb"></div>
+      <div class="row" style="margin-top:12px"><button class="btn ghost" id="qzNext">Następne pytanie</button></div>
+    </div>
+  </section>
+  <footer>
+    <span><i class="dot" id="offDot"></i><span id="offTxt">…</span></span>
+    <span>Na iPadzie: Safari → Udostępnij → Do ekranu początkowego</span>
+    <button type="button" id="resetBtn">Wyzeruj postęp</button>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
