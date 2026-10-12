@@ -3,13 +3,14 @@ import { $, pulse } from "../lib/dom";
 import { load, save } from "../lib/store";
 import { KEY, toast } from "../lib/progress";
 import { errorText, esc, sb, type Duel, type DuelAnswer, type Profile } from "../lib/supabase";
-import { auth, onAuth, syncNow } from "../lib/sync";
+import { auth, onAuth, signInGuest, syncNow } from "../lib/sync";
 import { avatar, openLogin } from "./account";
 
 interface Question { idx: number; prompt: string }
 interface Review { idx: number; prompt: string; answer: string; mine: string | null; mine_ok: boolean | null }
 
 const STORE = KEY + "duel";
+const NICK = KEY + "nick";
 
 let duel: Duel | null = null;
 let channel: RealtimeChannel | null = null;
@@ -108,8 +109,36 @@ function renderOff() {
 function renderAnon() {
   root().innerHTML = `
     <p>Zmierz się z ziomkiem: ten sam zestaw 10 pytań, liczy się liczba trafień, a przy remisie czas. Odpowiedzi sprawdza serwer, więc nie da się podejrzeć klucza.</p>
-    <button class="btn" type="button" id="duelLogin">Zaloguj się, żeby grać</button>`;
+    <div class="duel-lobby">
+      <div class="duel-box">
+        <h3>Graj jako gość</h3>
+        <p class="note">Bez logowania. Wpisz nick, który zobaczy przeciwnik.</p>
+        <div class="row">
+          <input type="text" id="guestNick" maxlength="20" autocomplete="nickname" spellcheck="false" placeholder="Twój nick" aria-label="Nick" style="flex:1;min-width:140px;width:auto">
+          <button class="btn" type="button" id="guestGo">Graj</button>
+        </div>
+      </div>
+      <div class="duel-box">
+        <h3>Z kontem</h3>
+        <p class="note">GitHub lub Google. XP i postęp zapiszą się na stałe i zsynchronizują między urządzeniami.</p>
+        <button class="btn ghost" type="button" id="duelLogin">Zaloguj się</button>
+      </div>
+    </div>
+    <div class="fb" id="duelFb"></div>`;
   $("#duelLogin").addEventListener("click", openLogin);
+  const nick = $<HTMLInputElement>("#guestNick");
+  nick.value = load<string>(NICK, "");
+  const go = async () => {
+    if (busy) return;
+    const btn = $<HTMLButtonElement>("#guestGo");
+    busy = true; btn.disabled = true;
+    const err = await signInGuest(nick.value);
+    busy = false; btn.disabled = false;
+    if (err) return fail({ message: err });
+    save(NICK, nick.value.trim());
+  };
+  $("#guestGo").addEventListener("click", () => void go());
+  nick.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); void go(); } });
 }
 
 function renderLobby() {
