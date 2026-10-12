@@ -180,3 +180,20 @@ describe("generator pytań", () => {
     expect(ok).toBe(false);
   });
 });
+
+describe("gość (anonimowe konto)", () => {
+  const GUEST = "00000000-0000-0000-0000-0000000000a1";
+
+  it("dostaje profil z nickiem i może zagrać pojedynek", async () => {
+    await admin(`insert into auth.users (id, email, raw_user_meta_data) values ($1, null, '{"name":"Ziomek"}')`, [GUEST]);
+    const [p] = await admin<{ display_name: string }>("select display_name from profiles where id = $1", [GUEST]);
+    expect(p.display_name).toBe("Ziomek");
+
+    const [d] = await as<{ id: string; code: string }>(GUEST, "select id, code from create_duel()");
+    const [j] = await as<{ status: string; guest: string }>(ALICE, "select status, guest from join_duel($1)", [d.code]);
+    expect(j.guest).toBe(ALICE);
+    expect(j.status).toBe("active");
+    const seen = await as(GUEST, "select id from duels where id = $1", [d.id]);
+    expect(seen).toHaveLength(1);
+  });
+});
