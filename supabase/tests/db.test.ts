@@ -197,3 +197,11 @@ describe("gość (anonimowe konto)", () => {
     expect(seen).toHaveLength(1);
   });
 });
+
+describe("keepalive", () => {
+  it("anon może wywołać keepalive, ale nic więcej", async () => {
+    const [r] = await as<{ keepalive: string }>(null, "select keepalive()");
+    expect(r.keepalive).toBeTruthy();
+    expect(await as(null, "select server_time()").catch((e) => e.message)).toMatch(/permission denied/);
+  });
+});
